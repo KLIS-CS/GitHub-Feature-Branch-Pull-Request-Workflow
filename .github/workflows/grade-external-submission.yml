@@ -25,8 +25,8 @@ jobs:
             const issueNumber = issue.number;
             const student = issue.user.login;
             const marker = '<!-- klis-cp2-mother-score -->';
+            const localMarker = '<!-- klis-cp2-progress -->';
             const allowedGraders = new Set(['hbycwyh2008']);
-            const starter = 'STARTER: Replace this line on your CP2 feature branch with a short description of your change.';
 
             const escapeRegex = value => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
             const section = label => {
@@ -46,18 +46,11 @@ jobs:
             }
 
             async function publicJson(url) {
-              const r = await fetch(url, { headers: { Accept: 'application/vnd.github+json', 'User-Agent': 'KLIS-CS-CP2-Grader' } });
+              const r = await fetch(url, { headers: { Accept: 'application/vnd.github+json', 'User-Agent': 'KLIS-CS-CP2-Mother-Grader' } });
               if (r.status === 404) return null;
               if (r.status === 403 || r.status === 429) throw new Error('GitHub API rate limit reached. Re-run later; this is not a student error.');
               if (!r.ok) throw new Error(`GitHub API returned ${r.status} for ${url}`);
               return await r.json();
-            }
-
-            async function publicText(url) {
-              const r = await fetch(url, { headers: { 'User-Agent': 'KLIS-CS-CP2-Grader' } });
-              if (r.status === 404) return null;
-              if (!r.ok) throw new Error(`Unable to read repository file (${r.status}).`);
-              return await r.text();
             }
 
             function parseManualGrade(body) {
@@ -65,7 +58,6 @@ jobs:
               const legacy = body.match(/(?:^|\n)\s*\/manual-grade\s+(40|[0-3]?\d)(?:\s|$)/i);
               if (legacy) return { score: Number(legacy[1]), breakdown: null, feedback: '' };
               if (!/(?:^|\n)\s*\/manual-grade\s*(?:\n|$)/i.test(body)) return null;
-
               const readTen = label => {
                 const m = body.match(new RegExp(`^\\s*${escapeRegex(label)}:\\s*(10|[0-9])\\s*\\/\\s*10\\s*$`, 'mi'));
                 return m ? Number(m[1]) : null;
@@ -84,73 +76,48 @@ jobs:
             const repositoryUrl = section('Practice Repository URL');
             const statedUsername = section('GitHub Username').replace(/^@/, '').trim();
             const parsed = parseRepoUrl(repositoryUrl);
-            const expectedBranch = `cp2-${student}`;
 
             let meta = null;
-            let branchData = null;
-            let comparison = null;
-            let mainFeature = '';
-            let branchFeature = '';
-            let submission = '';
-            let pulls = [];
+            let automatic = 0;
+            let progressUrl = null;
+            let progressBody = '';
+            let validation = 'Repository URL could not be parsed.';
 
             if (parsed) {
               const api = `https://api.github.com/repos/${encodeURIComponent(parsed.owner)}/${encodeURIComponent(parsed.repo)}`;
               meta = await publicJson(api);
-              if (meta && meta.private === false) {
-                branchData = await publicJson(`${api}/branches/${encodeURIComponent(expectedBranch)}`);
-                if (branchData) comparison = await publicJson(`${api}/compare/main...${encodeURIComponent(expectedBranch)}`);
-                const mainRaw = `https://raw.githubusercontent.com/${encodeURIComponent(parsed.owner)}/${encodeURIComponent(parsed.repo)}/main`;
-                const branchRaw = `https://raw.githubusercontent.com/${encodeURIComponent(parsed.owner)}/${encodeURIComponent(parsed.repo)}/${encodeURIComponent(expectedBranch)}`;
-                [mainFeature, branchFeature, submission] = await Promise.all([
-                  publicText(`${mainRaw}/feature.txt`),
-                  branchData ? publicText(`${branchRaw}/feature.txt`) : null,
-                  branchData ? publicText(`${branchRaw}/submission.md`) : null
-                ]);
-                pulls = await publicJson(`${api}/pulls?state=all&per_page=100`) || [];
+              if (!meta) {
+                validation = 'Repository not found.';
+              } else if (meta.private) {
+                validation = 'Repository is private. CP2 must be Public so the mother grader can read the trusted local grader output.';
+              } else if (meta.owner?.login?.toLowerCase() !== student.toLowerCase() || statedUsername.toLowerCase() !== student.toLowerCase()) {
+                validation = `Repository and submitted username must belong to @${student}.`;
+              } else {
+                validation = 'Public student-owned repository detected.';
+                const issues = await publicJson(`${api}/issues?state=all&per_page=100`) || [];
+                const candidates = [];
+                for (const item of issues) {
+                  if (!item.comments) continue;
+                  const comments = await publicJson(`${api}/issues/${item.number}/comments?per_page=100`) || [];
+                  for (const c of comments) {
+                    if (c.user?.login === 'github-actions[bot]' && c.body?.includes(localMarker)) {
+                      candidates.push({ ...c, parent: item });
+                    }
+                  }
+                }
+                candidates.sort((a,b) => new Date(b.updated_at || b.created_at) - new Date(a.updated_at || a.created_at));
+                const trusted = candidates[0];
+                if (trusted) {
+                  progressBody = trusted.body || '';
+                  progressUrl = trusted.html_url || trusted.parent?.html_url || null;
+                  const m = progressBody.match(/\*\*Automatic:\*\*\s*(\d+)\/60/i);
+                  if (m) automatic = Math.max(0, Math.min(60, Number(m[1])));
+                  validation += ` Trusted CP2 grader output found (${automatic}/60).`;
+                } else {
+                  validation += ' No trusted CP2 grader output found yet; run the student repository grader first.';
+                }
               }
             }
-
-            mainFeature = mainFeature ?? '';
-            branchFeature = branchFeature ?? '';
-            submission = submission ?? '';
-
-            const repoAccessible = Boolean(meta && meta.private === false);
-            const ownerMatches = Boolean(meta && meta.owner?.login?.toLowerCase() === student.toLowerCase() && statedUsername.toLowerCase() === student.toLowerCase());
-            const source = meta?.template_repository?.full_name?.toLowerCase() || '';
-            const sourceAllowed = Boolean(meta && meta.fork === false && (!source || source === 'klis-cs/github-feature-branch-pull-request-workflow'));
-            const mainIsDefault = Boolean(meta && (meta.default_branch || '').toLowerCase() === 'main');
-            const setupPassed = repoAccessible && ownerMatches && sourceAllowed && mainIsDefault;
-
-            const mainSafe = mainFeature.trim() === starter;
-            const featureChanged = Boolean(branchData && branchFeature.trim() !== starter && branchFeature.trim().length >= 20);
-            const ahead = comparison?.ahead_by || 0;
-            const pr = pulls.find(p => p.head?.ref === expectedBranch && p.base?.ref === 'main' && p.user?.login?.toLowerCase() === student.toLowerCase() && p.state === 'open');
-
-            let changedNames = [];
-            let allowedFiles = false;
-            if (pr && parsed) {
-              const files = await publicJson(`https://api.github.com/repos/${encodeURIComponent(parsed.owner)}/${encodeURIComponent(parsed.repo)}/pulls/${pr.number}/files?per_page=100`) || [];
-              changedNames = files.map(f => f.filename);
-              const allowed = new Set(['feature.txt', 'submission.md']);
-              allowedFiles = changedNames.includes('feature.txt') && changedNames.includes('submission.md') && changedNames.every(name => allowed.has(name));
-            }
-
-            const field = label => submission.match(new RegExp(`^${escapeRegex(label)}:\\s*(\\S.*)$`, 'mi'))?.[1]?.trim() || '';
-            const answer = heading => submission.match(new RegExp(`## ${escapeRegex(heading)}[\\s\\S]*?\\nAnswer:\\s*([\\s\\S]*?)(?=\\n## |$)`, 'i'))?.[1]?.trim() || '';
-            const commandBlock = submission.match(/## Commands Used[\s\S]*?```text\s*([\s\S]*?)```/i)?.[1]?.trim() || '';
-            const submissionComplete = ['Name', 'GitHub Username', 'Required Branch', 'Pull Request Number'].every(field) && commandBlock.length >= 10 && ['Question 1','Question 2','Question 3','Reflection'].every(answer);
-
-            const checks = [
-              ['Repository setup', setupPassed ? 5 : 0, 5, !repoAccessible ? 'Repository not found or not public.' : !ownerMatches ? `Repository and submitted username must belong to @${student}.` : !sourceAllowed ? 'Use the official KLIS-CS CP2 Copy Exercise.' : !mainIsDefault ? 'Default branch must be main.' : 'Public student-owned CP2 copy detected.'],
-              ['Correct checkpoint branch', branchData ? 10 : 0, 10, branchData ? expectedBranch : `expected ${expectedBranch}`],
-              ['main remained untouched', mainSafe ? 10 : 0, 10, mainSafe ? 'starter feature.txt unchanged on main' : 'feature.txt on main was modified'],
-              ['feature.txt changed on CP2 branch', featureChanged ? 10 : 0, 10, featureChanged ? 'branch feature change detected' : 'replace the starter line on the CP2 branch'],
-              ['Branch has commit(s) ahead of main', ahead >= 1 ? 10 : 0, 10, ahead >= 1 ? `${ahead} commit(s) ahead` : 'commit your work on the CP2 branch'],
-              ['Open PR to main with only allowed files', pr && allowedFiles ? 10 : pr ? 5 : 0, 10, !pr ? 'open the required Pull Request' : allowedFiles ? `PR #${pr.number}: ${changedNames.join(', ')}` : `PR #${pr.number}; changed: ${changedNames.join(', ') || 'none'}`],
-              ['Submission complete', submissionComplete ? 5 : 0, 5, submissionComplete ? 'all required fields and responses completed' : 'complete submission.md']
-            ];
-            const automatic = checks.reduce((s, [,earned]) => s + earned, 0);
 
             const comments = await github.paginate(github.rest.issues.listComments, { owner, repo, issue_number: issueNumber, per_page: 100 });
             let manual = null;
@@ -162,35 +129,33 @@ jobs:
 
             const teacher = manual?.score ?? 0;
             const total = automatic + teacher;
-            const rows = checks.map(([label,earned,max,detail]) => `| ${earned === max ? '✅' : earned ? '🟨' : '⬜'} ${label} | ${earned}/${max} | ${detail} |`).join('\n');
-            const status = automatic < 60 ? '🟡 **IN PROGRESS — complete the missing automatic evidence.**' : !manual ? '🔵 **AUTOMATIC CHECKS PASSED — awaiting teacher review.**' : `✅ **FINAL SCORE: ${total}/100**`;
             const finalLine = manual ? `${total}/100` : 'pending teacher review';
-            const prUrl = pr && parsed ? `https://github.com/${parsed.owner}/${parsed.repo}/pull/${pr.number}` : null;
-            const submissionUrl = branchData && parsed ? `https://github.com/${parsed.owner}/${parsed.repo}/blob/${expectedBranch}/submission.md` : null;
+            const status = automatic < 60 ? '🟡 **IN PROGRESS — complete the missing automatic evidence in the student repository.**' : !manual ? '🔵 **AUTOMATIC CHECKS PASSED — awaiting teacher review.**' : `✅ **FINAL SCORE: ${total}/100**`;
             const template = ['```text','/manual-grade','Branch safety: 0/10','Git workflow explanation: 0/10','Pull Request understanding: 0/10','Reflection & work quality: 0/10','','Feedback:','Write concise feedback here.','```'].join('\n');
+            const canonicalRepo = parsed ? `https://github.com/${parsed.owner}/${parsed.repo}` : repositoryUrl;
 
             const body = `${marker}
             ## CP2 Score — Mother Repository
 
             **Student:** @${student}  
-            **Practice repository:** ${repositoryUrl || 'not provided'}  
+            **Practice repository:** ${canonicalRepo || 'not provided'}  
             **Automatic score:** ${automatic}/60  
             **Teacher score:** ${manual ? `${teacher}/40 by @${manual.grader}` : 'awaiting review'}  
             **Final score:** ${finalLine}
 
             | Check | Score | Evidence |
             |---|---:|---|
-            ${rows}
+            | ${automatic === 60 ? '✅' : automatic ? '🟨' : '⬜'} Trusted student automatic grader | ${automatic}/60 | ${validation} |
             | 🧑‍🏫 Teacher review | ${manual ? `${teacher}/40` : '—/40'} | ${manual ? `graded by @${manual.grader}` : 'awaiting review'} |
 
             ${status}
 
             ### Teacher review links
-            ${prUrl ? `- [Open student Pull Request](${prUrl})` : '- Pull Request: not found'}
-            ${submissionUrl ? `- [Open submission.md](${submissionUrl})` : '- submission.md: not available'}
+            - ${canonicalRepo ? `[Open student repository](${canonicalRepo})` : 'Student repository unavailable'}
+            - ${progressUrl ? `[Open trusted CP2 progress evidence](${progressUrl})` : 'Trusted CP2 progress evidence not found'}
 
             ### 🧑‍🏫 Teacher grading
-            Grade here in the mother repository. The teacher score is published back to the student's CP2 progress display.
+            Grade here in the mother repository. The teacher score is published to the student's own CP2 score display.
 
             ${template}
 
@@ -210,7 +175,7 @@ jobs:
                 await github.rest.git.createRef({ owner, repo, ref: `refs/heads/${gradeBranch}`, sha: mainRef.data.object.sha });
               }
               const gradePath = `.cp2-grades/${student.toLowerCase()}.json`;
-              const gradeData = { version: 1, checkpoint: 'CP2', student: student.toLowerCase(), repository: repositoryUrl, automaticAtMother: automatic, teacherScore: teacher, finalAtMother: total, grader: manual.grader, breakdown: manual.breakdown, feedback: manual.feedback || '', submissionIssue: `https://github.com/${owner}/${repo}/issues/${issueNumber}`, updatedAt: new Date().toISOString() };
+              const gradeData = { version: 1, checkpoint: 'CP2', student: student.toLowerCase(), repository: canonicalRepo, automaticAtMother: automatic, teacherScore: teacher, finalAtMother: total, grader: manual.grader, breakdown: manual.breakdown, feedback: manual.feedback || '', submissionIssue: `https://github.com/${owner}/${repo}/issues/${issueNumber}`, updatedAt: new Date().toISOString() };
               let sha;
               try { const current = await github.rest.repos.getContent({ owner, repo, path: gradePath, ref: gradeBranch }); if (!Array.isArray(current.data)) sha = current.data.sha; }
               catch (e) { if (e.status !== 404) throw e; }
