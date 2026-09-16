@@ -16,7 +16,12 @@ permissions:
 
 jobs:
   grade:
-    if: ${{ github.event_name != 'issue_comment' || github.event.issue.pull_request }}
+    if: >-
+      ${{
+        github.event_name == 'push' ||
+        (github.event_name == 'pull_request_target' && startsWith(github.event.pull_request.head.ref, 'cp2-')) ||
+        (github.event_name == 'issue_comment' && github.event.issue.pull_request)
+      }}
     runs-on: ubuntu-latest
 
     steps:
@@ -69,6 +74,11 @@ jobs:
                 repo,
                 pull_number: context.payload.issue.number
               })).data;
+            }
+
+            if (eventPR && !eventPR.head.ref.startsWith('cp2-')) {
+              core.info(`Ignoring non-CP2 Pull Request branch: ${eventPR.head.ref}`);
+              return;
             }
 
             const username = eventPR ? eventPR.user.login : context.actor;
