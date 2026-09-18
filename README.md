@@ -34,9 +34,26 @@ After the copy is created:
 
 ## Required branch
 
+Your branch name must follow this **exact pattern**:
+
 ```text
 cp2-YOUR-GITHUB-USERNAME
 ```
+
+Example: if your GitHub username is `octocat`, your branch must be:
+
+```text
+cp2-octocat
+```
+
+Rules:
+
+- Start with exactly `cp2-`.
+- Put **your GitHub username** after `cp2-`.
+- Do not use `main`, `master`, `feature`, `cp2`, or a made-up name.
+- Your Pull Request must use this branch as the **head/source branch** and `main` as the **base/target branch**.
+
+The grader compares the real PR branch to `cp2-<your-github-username>`. A differently named branch does not earn the branch-name points.
 
 Do **not** work directly on `main`.
 
@@ -45,7 +62,7 @@ Do **not** work directly on `main`.
 On your required CP2 branch:
 
 1. Open `feature.txt` and replace the starter line with a short feature description.
-2. Complete `submission.md`.
+2. Complete `submission.md` **on that CP2 branch**. The grader reads `submission.md` from the PR's head branch, not from `main`.
 3. Use `git status` before and after staging.
 4. Stage your work with `git add`.
 5. Commit with a meaningful message.
@@ -66,13 +83,13 @@ The grader checks that `main` still contains the untouched starter file.
 
 | Evidence | Points |
 |---|---:|
-| Correct `cp2-USERNAME` branch exists | 10 |
+| Exact `cp2-YOUR-GITHUB-USERNAME` branch exists | 10 |
 | `main` still has the untouched starter file | 10 |
 | `feature.txt` changed on the CP2 branch | 10 |
 | CP2 branch has at least one commit ahead of `main` | 10 |
 | Open Pull Request from CP2 branch → `main` | 10 |
 | PR changes only the allowed files | 5 |
-| `submission.md` is complete | 5 |
+| `submission.md` is complete **on the feature branch** and its username/branch/PR metadata matches the real PR | 5 |
 | **Automatic total** | **60** |
 
 Your copied repository runs the automatic grader and creates/updates a **CP2 — Score** Issue. Detailed automatic evidence remains linked to the CP2 progress output.
