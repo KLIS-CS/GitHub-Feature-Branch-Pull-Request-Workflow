@@ -195,7 +195,7 @@ jobs:
 
             const automaticChecklist = checks.map(([label, earned, max, detail]) =>
               `- [${earned === max ? 'x' : ' '}] **${label}** — ${earned}/${max} — ${detail}`
-            ).join('\\n');
+            ).join('\n');
             const status = automatic < 60
               ? '🟡 **IN PROGRESS — complete the missing automatic evidence.**'
               : !manual
