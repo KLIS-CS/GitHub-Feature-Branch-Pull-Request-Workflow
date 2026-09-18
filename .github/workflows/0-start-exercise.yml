@@ -56,11 +56,12 @@ jobs:
             - [ ] I committed my work with a meaningful commit message.
             - [ ] I pushed \`${branch}\` to GitHub.
             - [ ] I opened a Pull Request from \`${branch}\` → \`main\`.
-            - [ ] I added the real Pull Request number to \`submission.md\`.
             - [ ] My Pull Request changes only \`feature.txt\` and \`submission.md\`.
             - [ ] I left the Pull Request open for grading.
 
-            The automatic grader will also post an **Automatic requirement checklist** showing which graded requirements passed and which still need work.
+            GitHub identifies the Pull Request automatically after you open it. You do **not** need to type a PR number into \`submission.md\`.
+
+            The automatic grader will update this **same Exercise Issue** with the grading checklist and score. It will not create separate Progress or Score Issues.
             `;
 
             await github.rest.issues.create({
