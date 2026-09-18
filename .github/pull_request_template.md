@@ -4,18 +4,22 @@
 
 Describe the change you made in `feature.txt`.
 
-### Why did you use a feature branch instead of `main`?
+### Why is this on a feature branch?
 
 Write 1–2 sentences.
 
-### Verification
+### Before requesting review
 
-- [ ] My head/source branch is named exactly `cp2-MY-GITHUB-USERNAME` (for example, `cp2-octocat`).
-- [ ] I used `git status` during the workflow.
-- [ ] I staged my changes with `git add`.
-- [ ] I committed my changes with a meaningful commit message.
-- [ ] I pushed my CP2 branch to GitHub.
+- [ ] My head/source branch is exactly `cp2-MY-GITHUB-USERNAME`.
 - [ ] This Pull Request targets `main`.
-- [ ] I completed `submission.md` on this feature branch, and its GitHub username and branch name are correct.
-- [ ] I changed only `feature.txt` and `submission.md`.
-- [ ] I will leave this Pull Request open until teacher grading is complete.
+- [ ] I used `git status` during the workflow.
+- [ ] I staged and committed the intended files.
+- [ ] I pushed the CP2 branch to GitHub.
+- [ ] I completed `submission.md` on this branch.
+- [ ] This PR changes only `feature.txt` and `submission.md`.
+
+### Review and merge
+
+- [ ] I will request review from another GitHub user.
+- [ ] I will wait for an **APPROVED** review before merging.
+- [ ] I will merge only after approval.
