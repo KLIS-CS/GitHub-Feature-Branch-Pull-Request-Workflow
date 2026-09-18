@@ -193,9 +193,6 @@ jobs:
               `| ${earned === max ? '✅' : earned ? '🟨' : '⬜'} ${label} | ${earned}/${max} | ${detail} |`
             ).join('\n');
 
-            const automaticChecklist = checks.map(([label, earned, max, detail]) =>
-              `- [${earned === max ? 'x' : ' '}] **${label}** — ${earned}/${max} — ${detail}`
-            ).join('\n');
             const status = automatic < 60
               ? '🟡 **IN PROGRESS — complete the missing automatic evidence.**'
               : !manual
@@ -243,11 +240,7 @@ jobs:
 
             ${automatic < 60 ? "🟡 **IN PROGRESS — complete the unchecked automatic requirements.**" : "🔵 **AUTOMATIC CHECKS PASSED — ready for teacher review.**"}
 
-            ### Automatic requirement checklist
-
-            ${automaticChecklist}
-
-            **Unchecked items are not complete yet or do not meet the grader requirement.** Fix them on the feature branch and push again; this same comment will update automatically.
+            **If a row is not complete, fix that item on the feature branch and push again. This same score table will update automatically.**
 
             ## Submit for teacher review
 
