@@ -59,7 +59,9 @@ jobs:
           grep -q 'klis-cp2-mother-score' .github/workflows/grade-external-submission.yml
           grep -q 'expectedBranch' .github/workflows/grade-external-submission.yml
           grep -q 'submission.md' .github/workflows/grade-external-submission.yml
-          grep -q 'compare/main' .github/workflows/grade-external-submission.yml
+          grep -q 'getBranch' .github/workflows/grade-external-submission.yml
+          grep -q 'compareCommits' .github/workflows/grade-external-submission.yml
+          grep -q 'getContent' .github/workflows/grade-external-submission.yml
           grep -q 'Automatic checklist' .github/workflows/grade-external-submission.yml
           grep -q 'Checked = passed. Unchecked = action required.' .github/workflows/grade-external-submission.yml
           grep -q 'checkpoint branch' .github/workflows/grade-external-submission.yml
