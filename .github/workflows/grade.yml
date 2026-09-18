@@ -11,7 +11,7 @@ on:
 
 permissions:
   contents: read
-  pull-requests: write
+  pull-requests: read
   issues: write
 
 jobs:
@@ -147,18 +147,14 @@ jobs:
 
             const submittedUsername = field('GitHub Username').replace(/^@/, '').trim();
             const submittedBranch = field('Required Branch').replace(/^`|`$/g, '').trim();
-            const submittedPrNumber = field('Pull Request Number').replace(/^#/, '').trim();
             const submissionMetadataCorrect =
               submittedUsername.toLowerCase() === username.toLowerCase() &&
-              submittedBranch.toLowerCase() === branch.toLowerCase() &&
-              !!pr &&
-              submittedPrNumber === String(pr.number);
+              submittedBranch.toLowerCase() === branch.toLowerCase();
 
             const submissionComplete =
               !!field('Name') &&
               !!submittedUsername &&
               !!submittedBranch &&
-              !!submittedPrNumber &&
               submissionMetadataCorrect &&
               commandBlock.length >= 10 &&
               ['Question 1', 'Question 2', 'Question 3', 'Reflection'].every(answer);
@@ -170,7 +166,7 @@ jobs:
               ['Branch has commit(s) ahead of main', ahead >= 1 ? 10 : 0, 10, ahead >= 1 ? `${ahead} commit(s) ahead` : 'commit your work on the CP2 branch'],
               ['Open Pull Request targets main', pr ? 10 : 0, 10, pr ? `PR #${pr.number}` : 'open the required Pull Request'],
               ['PR changes only allowed files', allowedFiles ? 5 : 0, 5, allowedFiles ? changedNames.join(', ') : (pr ? `changed: ${changedNames.join(', ') || 'none'}` : 'waiting for PR')],
-              ['Submission complete on feature branch', submissionComplete ? 5 : 0, 5, submissionComplete ? `read from ${branch}; metadata matches PR #${pr.number}` : `complete submission.md on ${branch || expectedBranch}; GitHub Username, Required Branch, and Pull Request Number must match the actual PR`]
+              ['Submission complete on feature branch', submissionComplete ? 5 : 0, 5, submissionComplete ? `read from ${branch}; username and branch metadata match` : `complete submission.md on ${branch || expectedBranch}; GitHub Username and Required Branch must match the actual PR branch`]
             ];
 
             const automatic = checks.reduce((s, c) => s + c[1], 0);
@@ -225,63 +221,65 @@ jobs:
               '```'
             ].join('\n');
 
+            const defaultTeacherBlock = `<!-- klis-cp2-teacher-sync-start -->
+            ### 🧑‍🏫 Teacher review
+
+            **Teacher score:** awaiting review  
+            **Final score:** pending teacher review
+
+            Teacher feedback will appear here after grading in the mother repository.
+            <!-- klis-cp2-teacher-sync-end -->`;
+
             const progressBody = `${marker}
-            ## Checkpoint 2 Progress
+            ## CP2 — Progress & Score
 
             **Student:** @${username}  
             **Repository:** https://github.com/${owner}/${repo}  
-            **Automatic:** ${automatic}/60  
-            **Teacher:** ${manual ? `${teacher}/40 by @${manual.grader}` : 'awaiting review'}  
-            **Current total:** ${total}/100
+            **Automatic score:** ${automatic}/60
 
             | Check | Score | Evidence |
             |---|---:|---|
             ${rows}
-            | 🧑‍🏫 Teacher review | ${manual ? `${teacher}/40` : '—/40'} | ${manual ? `graded by @${manual.grader}` : 'awaiting review'} |
 
-            ${status}
+            ${automatic < 60 ? "🟡 **IN PROGRESS — complete the unchecked automatic requirements.**" : "🔵 **AUTOMATIC CHECKS PASSED — ready for teacher review.**"}
 
             ### Automatic requirement checklist
 
             ${automaticChecklist}
 
-            **Unchecked items are not complete yet or do not meet the grader's requirement.** Fix them on the feature branch and push again; this checklist will update automatically.
+            **Unchecked items are not complete yet or do not meet the grader requirement.** Fix them on the feature branch and push again; this same comment will update automatically.
 
-            ### 🧑‍🏫 Teacher grading
+            ## Submit for teacher review
 
-            **Current teacher breakdown:** ${breakdownText}
+            [Submit CP2 to the mother repository](https://github.com/KLIS-CS/GitHub-Feature-Branch-Pull-Request-Workflow/issues/new?template=cp2-submission.yml)
 
-            Copy the fixed template below into a **new PR comment**, replace the scores, and add feedback. The workflow calculates the teacher subtotal automatically.
-
-            ${teacherTemplate}`;
+            ${defaultTeacherBlock}`;
 
             const allIssues = await github.paginate(github.rest.issues.listForRepo, {
               owner, repo, state: 'all', per_page: 100
             });
+            let exercise = allIssues.find(i => !i.pull_request && i.body?.includes('<!-- klis-cp2-exercise -->'));
+            if (!exercise) {
+              exercise = (await github.rest.issues.create({
+                owner,
+                repo,
+                title: 'Exercise: Checkpoint 2 — Feature Branch & Pull Request Workflow',
+                body: '<!-- klis-cp2-exercise -->\n## Checkpoint 2 — Feature Branch & Pull Request Workflow'
+              })).data;
+            }
 
-            if (pr) {
-              const old = prComments.find(c => c.user?.type === 'Bot' && c.body?.includes(marker));
-              if (old) {
-                await github.rest.issues.updateComment({ owner, repo, comment_id: old.id, body: progressBody });
-              } else {
-                await github.rest.issues.createComment({ owner, repo, issue_number: pr.number, body: progressBody });
-              }
+            const exerciseComments = await github.paginate(github.rest.issues.listComments, {
+              owner, repo, issue_number: exercise.number, per_page: 100
+            });
+            const old = exerciseComments.find(c => c.user?.type === 'Bot' && c.body?.includes(marker));
+            let finalProgressBody = progressBody;
+            const teacherMatch = old?.body?.match(/<!-- klis-cp2-teacher-sync-start -->[\s\S]*?<!-- klis-cp2-teacher-sync-end -->/);
+            if (teacherMatch) finalProgressBody = finalProgressBody.replace(defaultTeacherBlock, teacherMatch[0]);
+
+            if (old) {
+              await github.rest.issues.updateComment({ owner, repo, comment_id: old.id, body: finalProgressBody });
             } else {
-              let progress = allIssues.find(i => !i.pull_request && i.body?.includes(marker));
-              if (!progress) {
-                progress = (await github.rest.issues.create({
-                  owner, repo, title: 'Checkpoint 2 — Progress', body: marker
-                })).data;
-              }
-              const progressComments = await github.paginate(github.rest.issues.listComments, {
-                owner, repo, issue_number: progress.number, per_page: 100
-              });
-              const old = progressComments.find(c => c.user?.type === 'Bot' && c.body?.includes(marker));
-              if (old) {
-                await github.rest.issues.updateComment({ owner, repo, comment_id: old.id, body: progressBody });
-              } else {
-                await github.rest.issues.createComment({ owner, repo, issue_number: progress.number, body: progressBody });
-              }
+              await github.rest.issues.createComment({ owner, repo, issue_number: exercise.number, body: finalProgressBody });
             }
 
             await core.summary
