@@ -3,7 +3,6 @@ name: Start Exercise
 on:
   push:
     branches: [main]
-  workflow_dispatch:
 
 permissions:
   contents: read
@@ -11,6 +10,7 @@ permissions:
 
 jobs:
   start:
+    if: ${{ github.repository != 'KLIS-CS/GitHub-Feature-Branch-Pull-Request-Workflow' }}
     runs-on: ubuntu-latest
     steps:
       - name: Create checkpoint issue
