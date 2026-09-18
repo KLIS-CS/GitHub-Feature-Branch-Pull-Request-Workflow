@@ -68,7 +68,7 @@ On your required CP2 branch:
 4. Stage your work with `git add`.
 5. Commit with a meaningful message.
 6. Push the required branch to GitHub.
-7. Open a Pull Request from your CP2 branch into `main`.
+7. Open a Pull Request from your CP2 branch into `main`. GitHub detects its PR number automatically; do not add a PR number to `submission.md`.
 8. Leave the Pull Request **open** for grading.
 
 Your Pull Request should change only:
@@ -90,10 +90,10 @@ The grader checks that `main` still contains the untouched starter file.
 | CP2 branch has at least one commit ahead of `main` | 10 |
 | Open Pull Request from CP2 branch → `main` | 10 |
 | PR changes only the allowed files | 5 |
-| `submission.md` is complete **on the feature branch** and its username/branch/PR metadata matches the real PR | 5 |
+| `submission.md` is complete **on the feature branch** and its username/branch metadata matches the real PR branch | 5 |
 | **Automatic total** | **60** |
 
-Your copied repository runs the automatic grader and creates/updates a **CP2 — Score** Issue. Detailed automatic evidence remains linked to the CP2 progress output.
+Your copied repository uses the original **Exercise Issue** as the single student-facing status page. The automatic grader updates the checklist and score in that same Issue; it does not create separate Progress or Score Issues.
 
 ## Submit for teacher grading
 
@@ -110,7 +110,7 @@ Teacher rubric:
 - Pull Request understanding — 10
 - Reflection & work quality — 10
 
-After the teacher enters `/manual-grade` in the mother repository, the `/40` teacher score is published and pulled back into the student's own **CP2 — Score** Issue.
+After the teacher enters `/manual-grade` in the mother repository, the `/40` teacher score and feedback are synchronized back into the student's original **Exercise Issue**.
 
 ```text
 Student repository
@@ -118,7 +118,7 @@ Student repository
 → Submit CP2
 → mother repository /manual-grade /40
 → teacher grade published
-→ student's CP2 — Score updates
+→ student's original Exercise Issue updates
 → Final score /100
 ```
 
