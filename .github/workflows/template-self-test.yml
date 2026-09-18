@@ -47,6 +47,7 @@ jobs:
           grep -q '/manual-grade' TEACHER-GRADING.md
           grep -q 'Branch safety: 0/10' TEACHER-GRADING.md
           grep -q "branches: \['cp2-\*'\]" .github/workflows/grade.yml
+          grep -q 'pull-requests: write' .github/workflows/grade.yml
           grep -q 'Correct checkpoint branch name' .github/workflows/grade.yml
           grep -q 'expectedBranch' .github/workflows/grade.yml
           grep -q 'branchNameCorrect' .github/workflows/grade.yml
