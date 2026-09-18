@@ -289,19 +289,15 @@ jobs:
 
             const submittedUsername = field('GitHub Username').replace(/^@/, '').trim();
             const submittedBranch = field('Required Branch').replace(/^`|`$/g, '').trim();
-            const submittedPrNumber = field('Pull Request Number').replace(/^#/, '').trim();
 
             const submissionMetadataCorrect =
               submittedUsername.toLowerCase() === student.toLowerCase() &&
-              submittedBranch.toLowerCase() === expectedBranch.toLowerCase() &&
-              Boolean(pr) &&
-              submittedPrNumber === String(pr?.number || '');
+              submittedBranch.toLowerCase() === expectedBranch.toLowerCase();
 
             const submissionComplete =
               Boolean(field('Name')) &&
               Boolean(submittedUsername) &&
               Boolean(submittedBranch) &&
-              Boolean(submittedPrNumber) &&
               submissionMetadataCorrect &&
               commandBlock.length >= 10 &&
               ['Question 1', 'Question 2', 'Question 3', 'Reflection'].every(label => Boolean(answer(label)));
@@ -321,8 +317,8 @@ jobs:
                 allowedFiles ? changedNames.join(', ') : (pr ? `changed: ${changedNames.join(', ') || 'none'}; only feature.txt and submission.md are allowed` : 'waiting for the required Pull Request')],
               ['Submission complete on checkpoint branch', submissionComplete ? 5 : 0, 5,
                 submissionComplete
-                  ? `submission.md read from ${expectedBranch}; metadata matches PR #${pr.number}`
-                  : `complete submission.md on ${expectedBranch}; Name, GitHub Username, Required Branch, Pull Request Number, commands, answers, and reflection must be complete`]
+                  ? `submission.md read from ${expectedBranch}; username and branch metadata match`
+                  : `complete submission.md on ${expectedBranch}; Name, GitHub Username, Required Branch, commands, answers, and reflection must be complete`]
             ];
 
             const automatic = checks.reduce((sum, [, earned]) => sum + earned, 0);
