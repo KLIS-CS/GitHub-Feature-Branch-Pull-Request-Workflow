@@ -36,11 +36,13 @@ jobs:
 
             **Required branch:** \`${branch}\`
 
+            Branch naming is strict: use exactly \`cp2-YOUR-GITHUB-USERNAME\`. For you, that means \`${branch}\`. The Pull Request must use this as the head/source branch and \`main\` as the base/target branch.
+
             ### Your task
             1. Clone this repository to your computer.
             2. Create the required branch locally. Do not work on \`main\`.
             3. Edit \`feature.txt\` on the required branch.
-            4. Complete \`submission.md\`.
+            4. Complete \`submission.md\` on the required branch. Its GitHub Username, Required Branch, and Pull Request Number must match the real Pull Request.
             5. Use \`git status\`, \`git add\`, \`git commit\`, and \`git push\` as part of the workflow.
             6. Push the required branch to GitHub.
             7. Open a Pull Request from the required branch into \`main\`.
