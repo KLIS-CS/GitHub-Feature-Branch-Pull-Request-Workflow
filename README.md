@@ -25,12 +25,13 @@ Keep the copied repository **Public**. The mother repository needs public read a
 
 After the copy is created:
 
-1. Open **Actions**.
-2. Select **Start Exercise**.
-3. Choose **Run workflow**.
-4. Read the Exercise Issue GitHub Actions creates.
-5. Clone your copied repository to your computer.
-6. Complete the checkpoint locally.
+1. Wait a few seconds for GitHub to create the **Exercise Issue automatically**.
+2. Open **Issues** and read **Exercise: Checkpoint 2 — Feature Branch & Pull Request Workflow**.
+3. Find your exact required branch name in that Issue.
+4. Clone your copied repository to your computer.
+5. Complete the checkpoint locally on the required CP2 branch.
+
+You do **not** need to open **Actions** or manually run a workflow to start the exercise.
 
 ## Required branch
 
