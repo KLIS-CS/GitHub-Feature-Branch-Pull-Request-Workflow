@@ -1,9 +1,8 @@
 # Checkpoint 2 Submission
 
 > Complete this file on your required `cp2-YOUR-GITHUB-USERNAME` branch.
-> The grader reads this file from the Pull Request's **head/source branch**, not from `main`.
-> `GitHub Username` and `Required Branch` must match the real Pull Request.
-> The grader detects the Pull Request number automatically after you open the PR.
+> The grader reads this file from the Pull Request's stored **head commit**, so it still works after merge or branch deletion.
+> GitHub detects the Pull Request number automatically.
 
 Name:  
 GitHub Username:  
@@ -11,23 +10,21 @@ Required Branch:
 
 ## Commands Used
 
-Write the commands you used, **one command per line**, inside the code block below.
+Write the commands you actually used, one command per line.
 
 ```text
 git clone ...
-git branch cp2-YOUR-GITHUB-USERNAME
-git switch cp2-YOUR-GITHUB-USERNAME
+git switch -c cp2-YOUR-GITHUB-USERNAME
 git status
-git add .
+git add feature.txt submission.md
+git status
 git commit -m "..."
-git push origin cp2-YOUR-GITHUB-USERNAME
+git push -u origin cp2-YOUR-GITHUB-USERNAME
 ```
-
-Replace the examples with the commands you actually used.
 
 ## Question 1 — Branch Safety
 
-Why should you avoid doing this checkpoint directly on `main`?
+Why should you avoid implementing this checkpoint directly on `main`?
 
 Answer:
 
@@ -37,14 +34,14 @@ What is the difference between `git add` and `git commit`?
 
 Answer:
 
-## Question 3 — Commit vs Push vs Pull Request
+## Question 3 — Push, Pull Request, Review, Merge
 
-Explain what changes when you commit locally, when you push the branch, and when you open a Pull Request.
+Explain what changes when you push a branch, open a Pull Request, receive a review, and merge the Pull Request.
 
 Answer:
 
 ## Reflection
 
-What Git command or checkpoint helped you understand the repository state most clearly, and why?
+Which checkpoint in the branch → PR → review → merge workflow is most useful for preventing mistakes, and why?
 
 Answer:
