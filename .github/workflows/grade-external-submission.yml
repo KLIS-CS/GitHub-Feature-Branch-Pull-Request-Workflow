@@ -238,7 +238,7 @@ jobs:
 
             **Student:** @${student}  
             **Repository:** ${canonicalRepo || 'not detected'}  
-            **Checkpoint branch:** `cp2-${student}`  
+            **Checkpoint branch:** <code>cp2-${student}</code>  
             **Automatic:** **${automatic}/60**  
             **Teacher:** **${manual ? `${teacher}/40` : 'pending /40'}**  
             **Final:** **${finalLine}**
@@ -250,7 +250,7 @@ jobs:
             ${automaticChecklist}
 
             > **Checked = passed. Unchecked = action required.**  
-            > All student files and answers are checked on the `cp2-${student}` branch. A merge to `main` is **not** required.
+            > All student files and answers are checked on the <code>cp2-${student}</code> branch. A merge to <code>main</code> is **not** required.
 
             ### 🧑‍🏫 Teacher review — ${manual ? `${teacher}/40` : 'pending /40'}
 
