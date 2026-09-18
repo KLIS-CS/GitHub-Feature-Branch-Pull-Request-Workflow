@@ -2,12 +2,12 @@
 
 > Complete this file on your required `cp2-YOUR-GITHUB-USERNAME` branch.
 > The grader reads this file from the Pull Request's **head/source branch**, not from `main`.
-> `GitHub Username`, `Required Branch`, and `Pull Request Number` must match the real Pull Request.
+> `GitHub Username` and `Required Branch` must match the real Pull Request.
+> The grader detects the Pull Request number automatically after you open the PR.
 
 Name:  
 GitHub Username:  
 Required Branch:  
-Pull Request Number:  
 
 ## Commands Used
 
