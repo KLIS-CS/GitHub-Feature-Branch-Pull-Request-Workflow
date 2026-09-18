@@ -42,7 +42,7 @@ jobs:
           grep -q "PR's head branch, not from \`main\`" README.md
           grep -q 'Automatic total.*60' README.md
           grep -q 'Submit CP2' README.md
-          grep -q 'CP2 — Score' README.md
+          grep -q 'single student-facing status page' README.md
           grep -q '^STARTER: Replace this line on your CP2 feature branch' feature.txt
           grep -q 'Question 1 — Branch Safety' submission.md
           grep -q 'Question 2 — Stage vs Commit' submission.md
@@ -51,12 +51,13 @@ jobs:
           grep -q '/manual-grade' TEACHER-GRADING.md
           grep -q 'Branch safety: 0/10' TEACHER-GRADING.md
           grep -q "branches: \['cp2-\*'\]" .github/workflows/grade.yml
-          grep -q 'pull-requests: write' .github/workflows/grade.yml
+          grep -q 'pull-requests: read' .github/workflows/grade.yml
           grep -q 'Correct checkpoint branch name' .github/workflows/grade.yml
           grep -q 'expectedBranch' .github/workflows/grade.yml
           grep -q 'branchNameCorrect' .github/workflows/grade.yml
           grep -q "read('submission.md', branch)" .github/workflows/grade.yml
           grep -q 'submissionMetadataCorrect' .github/workflows/grade.yml
+          ! grep -q "field('Pull Request Number')" .github/workflows/grade.yml
           grep -q 'Submission complete on feature branch' .github/workflows/grade.yml
           grep -q 'main remained untouched' .github/workflows/grade.yml
           grep -q 'PR changes only allowed files' .github/workflows/grade.yml
@@ -73,7 +74,13 @@ jobs:
           grep -q 'A merge to' .github/workflows/grade-external-submission.yml
           grep -q 'Grade CP2 directly' .github/workflows/grade-external-submission.yml || true
           grep -q '.cp2-grades/' .github/workflows/grade-external-submission.yml
-          grep -q 'klis-cp2-local-score' .github/workflows/student-score.yml
+          grep -q 'klis-cp2-exercise' .github/workflows/student-score.yml
+          grep -q 'klis-cp2-progress' .github/workflows/student-score.yml
+          grep -q 'klis-cp2-teacher-sync-start' .github/workflows/student-score.yml
+          grep -q 'updateComment' .github/workflows/student-score.yml
+          ! grep -q "title: 'CP2 — Score'" .github/workflows/student-score.yml
+          ! grep -q "title: 'Checkpoint 2 — Progress'" .github/workflows/grade.yml
+          ! grep -q 'Pull Request Number:' submission.md
           grep -q 'raw.githubusercontent.com/KLIS-CS/GitHub-Feature-Branch-Pull-Request-Workflow/grades' .github/workflows/student-score.yml
 
       - name: Validate workflow YAML syntax
