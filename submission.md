@@ -1,5 +1,9 @@
 # Checkpoint 2 Submission
 
+> Complete this file on your required `cp2-YOUR-GITHUB-USERNAME` branch.
+> The grader reads this file from the Pull Request's **head/source branch**, not from `main`.
+> `GitHub Username`, `Required Branch`, and `Pull Request Number` must match the real Pull Request.
+
 Name:
 GitHub Username:
 Required Branch:
