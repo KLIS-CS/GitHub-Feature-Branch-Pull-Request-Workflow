@@ -2,7 +2,7 @@
 
 Checkpoint 2 uses a **60 automatic + 40 teacher = 100 total** model.
 
-The automatic grader checks observable Git/GitHub evidence. The teacher scores reasoning and work quality from the student's open Pull Request and `submission.md`.
+The automatic grader checks observable Git/GitHub evidence. The teacher scores reasoning and work quality from the student's open Pull Request and the `submission.md` stored on that Pull Request's **head/source branch**. Do not grade the starter copy of `submission.md` on `main`.
 
 ## Teacher rubric — 40 points
 
