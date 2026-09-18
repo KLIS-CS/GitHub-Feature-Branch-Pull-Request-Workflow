@@ -29,6 +29,8 @@ jobs:
           test -f .github/workflows/0-start-exercise.yml
           grep -q 'branches: \[main\]' .github/workflows/0-start-exercise.yml
           grep -q "github.repository != 'KLIS-CS/GitHub-Feature-Branch-Pull-Request-Workflow'" .github/workflows/0-start-exercise.yml
+          ! grep -q '### Student checklist' .github/workflows/0-start-exercise.yml
+          grep -q 'You do not need to check boxes manually' .github/workflows/0-start-exercise.yml
           grep -q 'Exercise Issue automatically' README.md
           grep -q 'do \*\*not\*\* need to open \*\*Actions\*\*' README.md
           test -f .github/workflows/grade.yml
