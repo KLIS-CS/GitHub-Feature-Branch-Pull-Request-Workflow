@@ -61,6 +61,26 @@ jobs:
               return await r.json();
             }
 
+            function parseAutomaticChecklist(body) {
+              if (!body) return '';
+
+              const checklistSection = body.match(/### Automatic requirement checklist\s*\n([\s\S]*?)(?=\n### |$)/i)?.[1] || '';
+              const checklistLines = checklistSection.split('\n').filter(line => /^\s*- \[[ xX]\]/.test(line));
+              if (checklistLines.length) return checklistLines.join('\n');
+
+              const rows = [];
+              for (const line of body.split('\n')) {
+                const m = line.match(/^\|\s*(?:✅|🟨|⬜)?\s*(.*?)\s*\|\s*(\d+)\s*\/\s*(\d+)\s*\|\s*(.*?)\s*\|\s*$/);
+                if (!m) continue;
+                const label = m[1].trim();
+                const earned = Number(m[2]);
+                const max = Number(m[3]);
+                const detail = m[4].trim();
+                if (/teacher review/i.test(label)) continue;
+                rows.push(`- [${earned === max ? 'x' : ' '}] **${label}** — ${earned}/${max} — ${detail}`);
+              }
+              return rows.join('\n');
+            }
             function parseManualGrade(body) {
               if (!body) return null;
               const legacy = body.match(/(?:^|\n)\s*\/manual-grade\s+(40|[0-3]?\d)(?:\s|$)/i);
@@ -186,6 +206,8 @@ jobs:
               if (grade) { manual = { ...grade, grader: c.user.login }; break; }
             }
 
+            const automaticChecklist = parseAutomaticChecklist(progressBody) || '- [ ] **Detailed automatic checks unavailable** — open the trusted CP2 progress evidence and re-run the student grader.';
+
             const teacher = manual?.score ?? 0;
             const total = automatic + teacher;
             const finalLine = manual ? `${total}/100` : 'pending teacher review';
@@ -208,6 +230,12 @@ jobs:
             | 🧑‍🏫 Teacher review | ${manual ? `${teacher}/40` : '—/40'} | ${manual ? `graded by @${manual.grader}` : 'awaiting review'} |
 
             ${status}
+
+            ### Automatic requirement checklist
+
+            ${automaticChecklist}
+
+            **Unchecked items are incomplete or do not meet the CP2 grader requirement.** The evidence after each item explains what the student still needs to fix.
 
             ### Teacher review links
             - ${canonicalRepo ? `[Open student repository](${canonicalRepo})` : 'Student repository unavailable'}
