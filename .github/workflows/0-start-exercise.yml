@@ -40,17 +40,20 @@ jobs:
 
             ### Your task
 
-            1. Clone this repository to your computer.
-            2. Create and switch to \`${branch}\`. Do not do the checkpoint work on \`main\`.
-            3. On that branch, update \`feature.txt\` and complete \`submission.md\`.
-            4. Commit and push \`${branch}\` to GitHub.
-            5. Open a Pull Request from \`${branch}\` → \`main\` and leave it open for grading.
+            - [ ] Clone the repository.
+            - [ ] Create and switch to `${branch}`. Do not implement the checkpoint directly on `main`.
+            - [ ] Update only `feature.txt` and `submission.md`.
+            - [ ] Commit and push `${branch}`.
+            - [ ] Open a Pull Request from `${branch}` → `main`.
+            - [ ] Request review from another GitHub user.
+            - [ ] Receive an **APPROVED** review.
+            - [ ] Merge only after approval.
 
-            GitHub detects the Pull Request automatically. You do **not** need to enter a PR number in \`submission.md\`.
+            GitHub detects the Pull Request automatically. You do **not** enter a PR number manually.
 
             ### Automatic grading
 
-            The grader updates the checklist and score **below in this same Issue** whenever you push or update the Pull Request. You do not need to check boxes manually.
+            The grader updates the checklist and score **below in this same Issue** whenever you push, review, or merge. It still works if you delete the feature branch after merge.
             `;
 
             await github.rest.issues.create({
