@@ -64,22 +64,36 @@ jobs:
             function parseAutomaticChecklist(body) {
               if (!body) return '';
 
+              const items = [];
               const checklistSection = body.match(/### Automatic requirement checklist\s*\n([\s\S]*?)(?=\n### |$)/i)?.[1] || '';
-              const checklistLines = checklistSection.split('\n').filter(line => /^\s*- \[[ xX]\]/.test(line));
-              if (checklistLines.length) return checklistLines.join('\n');
-
-              const rows = [];
-              for (const line of body.split('\n')) {
-                const m = line.match(/^\|\s*(?:✅|🟨|⬜)?\s*(.*?)\s*\|\s*(\d+)\s*\/\s*(\d+)\s*\|\s*(.*?)\s*\|\s*$/);
+              for (const line of checklistSection.split('\n')) {
+                const m = line.match(/^\s*- \[([ xX])\]\s+\*\*(.*?)\*\*\s+—\s+(\d+)\/(\d+)\s+—\s+(.*)$/);
                 if (!m) continue;
-                const label = m[1].trim();
-                const earned = Number(m[2]);
-                const max = Number(m[3]);
-                const detail = m[4].trim();
-                if (/teacher review/i.test(label)) continue;
-                rows.push(`- [${earned === max ? 'x' : ' '}] **${label}** — ${earned}/${max} — ${detail}`);
+                items.push({
+                  passed: m[1].toLowerCase() === 'x',
+                  label: m[2].trim(),
+                  earned: Number(m[3]),
+                  max: Number(m[4]),
+                  detail: m[5].trim()
+                });
               }
-              return rows.join('\n');
+
+              if (!items.length) {
+                for (const line of body.split('\n')) {
+                  const m = line.match(/^\|\s*(?:✅|🟨|⬜)?\s*(.*?)\s*\|\s*(\d+)\s*\/\s*(\d+)\s*\|\s*(.*?)\s*\|\s*$/);
+                  if (!m) continue;
+                  const label = m[1].trim();
+                  if (/teacher review/i.test(label)) continue;
+                  const earned = Number(m[2]);
+                  const max = Number(m[3]);
+                  items.push({ passed: earned === max, label, earned, max, detail: m[4].trim() });
+                }
+              }
+
+              return items.map(item => [
+                `- [${item.passed ? 'x' : ' '}] **${item.label}** — **${item.earned}/${item.max}**`,
+                `  - ${item.passed ? '**Evidence:**' : '**Fix:**'} ${item.detail}`
+              ].join('\n')).join('\n');
             }
             function parseManualGrade(body) {
               if (!body) return null;
@@ -215,38 +229,42 @@ jobs:
             const template = ['```text','/manual-grade','Branch safety: 0/10','Git workflow explanation: 0/10','Pull Request understanding: 0/10','Reflection & work quality: 0/10','','Feedback:','Write concise feedback here.','```'].join('\n');
             const canonicalRepo = parsed ? `https://github.com/${parsed.owner}/${parsed.repo}` : repositoryUrl;
 
+            const teacherChecklist = manual
+              ? `- [x] **Teacher review completed** — **${teacher}/40**\n  - **Evidence:** graded by @${manual.grader}`
+              : '- [ ] **Teacher review pending** — **—/40**\n  - **Next step:** teacher reviews the branch work, explanations, Pull Request, and reflection.';
+
             const body = `${marker}
             ## CP2 Score — Mother Repository
 
             **Student:** @${student}  
-            **Practice repository:** ${canonicalRepo || 'not provided'}  
-            **Automatic score:** ${automatic}/60  
-            **Teacher score:** ${manual ? `${teacher}/40 by @${manual.grader}` : 'awaiting review'}  
-            **Final score:** ${finalLine}
-
-            | Check | Score | Evidence |
-            |---|---:|---|
-            | ${automatic === 60 ? '✅' : automatic ? '🟨' : '⬜'} Trusted student automatic grader | ${automatic}/60 | ${validation} |
-            | 🧑‍🏫 Teacher review | ${manual ? `${teacher}/40` : '—/40'} | ${manual ? `graded by @${manual.grader}` : 'awaiting review'} |
+            **Repository:** ${canonicalRepo || 'not detected'}  
+            **Checkpoint branch:** `cp2-${student}`  
+            **Automatic:** **${automatic}/60**  
+            **Teacher:** **${manual ? `${teacher}/40` : 'pending /40'}**  
+            **Final:** **${finalLine}**
 
             ${status}
 
-            ### Automatic requirement checklist
+            ### ✅ Automatic checklist — ${automatic}/60
 
             ${automaticChecklist}
 
-            **Unchecked items are incomplete or do not meet the CP2 grader requirement.** The evidence after each item explains what the student still needs to fix.
+            > **Checked = passed. Unchecked = action required.**  
+            > All student files and answers are checked on the `cp2-${student}` branch. A merge to `main` is **not** required.
 
-            ### Teacher review links
+            ### 🧑‍🏫 Teacher review — ${manual ? `${teacher}/40` : 'pending /40'}
+
+            ${teacherChecklist}
+
+            ### Review links
             - ${canonicalRepo ? `[Open student repository](${canonicalRepo})` : 'Student repository unavailable'}
-            - ${progressUrl ? `[Open trusted CP2 progress evidence](${progressUrl})` : 'Trusted CP2 progress evidence not found'}
+            - ${progressUrl ? `[Open detailed automatic evidence](${progressUrl})` : 'Detailed automatic evidence not found'}
 
-            ### 🧑‍🏫 Teacher grading
-            Grade here in the mother repository. The teacher score is published to the student's own CP2 score display.
+            ### Teacher grading command
 
             ${template}
 
-            **Re-grade:** after the student changes the repository, edit this submission Issue or add a comment.
+            **Re-grade:** after the student fixes work on the checkpoint branch and pushes again, edit this submission Issue or add a comment.
             `;
 
             const old = comments.find(c => c.user?.type === 'Bot' && c.body?.includes(marker));
