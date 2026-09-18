@@ -29,6 +29,10 @@ jobs:
         with:
           script: |
             const { owner, repo } = context.repo;
+            const { execFileSync } = require('child_process');
+            const fs = require('fs');
+            const os = require('os');
+            const path = require('path');
             const issue = context.payload.issue;
             const issueNumber = issue.number;
             const student = issue.user.login;
@@ -147,116 +151,127 @@ jobs:
             const expectedBranch = `cp2-${student}`;
             const starter = 'STARTER: Replace this line on your CP2 feature branch with a short description of your change.';
 
-            let meta = null;
-            let branchData = null;
-            let comparison = null;
-            let pulls = [];
-            let pr = null;
-            let changedNames = [];
+            let branchExists = false;
             let mainFeature = '';
             let branchFeature = '';
             let submission = '';
+            let ahead = 0;
+            let changedNames = [];
+            let pr = null;
             let validation = 'Repository URL could not be parsed.';
 
             if (parsed) {
-              const studentOwner = parsed.owner;
-              const studentRepo = parsed.repo;
+              const cloneUrl = `https://github.com/${parsed.owner}/${parsed.repo}.git`;
+              const workDir = fs.mkdtempSync(path.join(os.tmpdir(), 'klis-cp2-'));
 
-              const readExternal = async (filePath, ref) => {
+              const git = args => execFileSync('git', ['-C', workDir, ...args], {
+                encoding: 'utf8',
+                stdio: ['ignore', 'pipe', 'pipe']
+              }).trim();
+
+              const gitShow = (ref, filePath) => {
                 try {
-                  const r = await github.rest.repos.getContent({
-                    owner: studentOwner,
-                    repo: studentRepo,
-                    path: filePath,
-                    ref
-                  });
-                  if (Array.isArray(r.data) || !r.data.content) return '';
-                  return Buffer.from(r.data.content, r.data.encoding).toString('utf8');
-                } catch (error) {
-                  if (error.status === 404) return '';
-                  throw error;
+                  return git(['show', `${ref}:${filePath}`]);
+                } catch {
+                  return '';
                 }
               };
 
               try {
-                meta = (await github.rest.repos.get({ owner: studentOwner, repo: studentRepo })).data;
-              } catch (error) {
-                if (error.status !== 404) throw error;
-              }
+                execFileSync('git', ['clone', '--quiet', '--no-checkout', cloneUrl, workDir], {
+                  encoding: 'utf8',
+                  stdio: ['ignore', 'pipe', 'pipe']
+                });
 
-              if (!meta) {
-                validation = 'Repository not found.';
-              } else if (meta.private) {
-                validation = 'Repository is private. CP2 must be Public so the mother grader can inspect the checkpoint branch.';
-              } else if (
-                meta.owner?.login?.toLowerCase() !== student.toLowerCase() ||
-                statedUsername.toLowerCase() !== student.toLowerCase()
-              ) {
-                validation = `Repository and submitted username must belong to @${student}.`;
-              } else {
-                validation = 'Public student-owned repository detected.';
+                validation = 'Public student repository cloned successfully.';
 
+                const mainSha = git(['rev-parse', 'origin/main']);
+                mainFeature = gitShow('origin/main', 'feature.txt');
+
+                let branchSha = '';
                 try {
-                  branchData = (await github.rest.repos.getBranch({
-                    owner: studentOwner,
-                    repo: studentRepo,
-                    branch: expectedBranch
-                  })).data;
-                } catch (error) {
-                  if (error.status !== 404) throw error;
+                  git(['fetch', '--quiet', 'origin', expectedBranch]);
+                  branchSha = git(['rev-parse', 'FETCH_HEAD']);
+                  branchExists = Boolean(branchSha);
+                } catch {
+                  branchExists = false;
                 }
 
-                mainFeature = await readExternal('feature.txt', 'main');
+                if (branchExists) {
+                  branchFeature = gitShow(branchSha, 'feature.txt');
+                  submission = gitShow(branchSha, 'submission.md');
 
-                if (branchData) {
-                  [branchFeature, submission] = await Promise.all([
-                    readExternal('feature.txt', expectedBranch),
-                    readExternal('submission.md', expectedBranch)
-                  ]);
                   try {
-                    comparison = (await github.rest.repos.compareCommits({
-                      owner: studentOwner,
-                      repo: studentRepo,
-                      base: 'main',
-                      head: expectedBranch
-                    })).data;
-                  } catch (error) {
-                    if (error.status !== 404) throw error;
+                    ahead = Number(git(['rev-list', '--count', `${mainSha}..${branchSha}`])) || 0;
+                  } catch {
+                    ahead = 0;
+                  }
+
+                  try {
+                    changedNames = git(['diff', '--name-only', `${mainSha}...${branchSha}`])
+                      .split(/\r?\n/)
+                      .map(s => s.trim())
+                      .filter(Boolean);
+                  } catch {
+                    changedNames = [];
+                  }
+
+                  // GitHub exposes merge refs for open Pull Requests.
+                  // Match the PR merge ref whose second parent is this checkpoint branch.
+                  let mergeRefs = '';
+                  try {
+                    mergeRefs = execFileSync('git', ['ls-remote', cloneUrl, 'refs/pull/*/merge'], {
+                      encoding: 'utf8',
+                      stdio: ['ignore', 'pipe', 'pipe']
+                    }).trim();
+                  } catch {
+                    mergeRefs = '';
+                  }
+
+                  for (const line of mergeRefs.split(/\r?\n/).filter(Boolean)) {
+                    const ref = line.split(/\s+/)[1] || '';
+                    const m = ref.match(/^refs\/pull\/(\d+)\/merge$/);
+                    if (!m) continue;
+
+                    try {
+                      git(['fetch', '--quiet', 'origin', ref]);
+                      const mergeSha = git(['rev-parse', 'FETCH_HEAD']);
+                      const headParent = git(['rev-parse', `${mergeSha}^2`]);
+                      const baseParent = git(['rev-parse', `${mergeSha}^1`]);
+                      let baseIsMain = false;
+                      try {
+                        execFileSync('git', ['-C', workDir, 'merge-base', '--is-ancestor', baseParent, mainSha], {
+                          stdio: ['ignore', 'ignore', 'ignore']
+                        });
+                        baseIsMain = true;
+                      } catch {
+                        baseIsMain = false;
+                      }
+
+                      if (headParent === branchSha && baseIsMain) {
+                        pr = {
+                          number: Number(m[1]),
+                          html_url: `https://github.com/${parsed.owner}/${parsed.repo}/pull/${m[1]}`
+                        };
+                        break;
+                      }
+                    } catch {
+                      // Ignore stale or non-mergeable PR refs and continue.
+                    }
                   }
                 }
-
-                pulls = await github.paginate(github.rest.pulls.list, {
-                  owner: studentOwner,
-                  repo: studentRepo,
-                  state: 'all',
-                  per_page: 100
-                });
-                pr = pulls.find(p =>
-                  p.head?.ref === expectedBranch &&
-                  p.base?.ref === 'main' &&
-                  p.user?.login?.toLowerCase() === student.toLowerCase() &&
-                  p.state === 'open'
-                ) || null;
-
-                if (pr) {
-                  const files = await github.paginate(github.rest.pulls.listFiles, {
-                    owner: studentOwner,
-                    repo: studentRepo,
-                    pull_number: pr.number,
-                    per_page: 100
-                  });
-                  changedNames = files.map(file => file.filename);
-                }
+              } catch (error) {
+                validation = `Unable to clone public student repository: ${error.message}`;
+              } finally {
+                fs.rmSync(workDir, { recursive: true, force: true });
               }
             }
 
-            const branchExists = Boolean(branchData);
             const mainSafe = mainFeature.trim() === starter;
             const featureChanged =
               branchExists &&
               branchFeature.trim() !== starter &&
               branchFeature.trim().length >= 20;
-            const ahead = comparison?.ahead_by || 0;
 
             const allowed = new Set(['feature.txt', 'submission.md']);
             const allowedFiles =
