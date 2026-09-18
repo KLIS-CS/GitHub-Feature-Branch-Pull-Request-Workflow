@@ -5,7 +5,7 @@ body:
   - type: markdown
     attributes:
       value: |
-        Submit the **repository URL** for your completed CP2 copy. Your repository must be Public so the KLIS-CS mother grader can inspect the branch, Pull Request, and submission evidence.
+        The completed public CP2 repository is detected automatically from the GitHub account that opens this submission. The mother grader then inspects its branch, Pull Request, and submission evidence.
 
   - type: markdown
     attributes:
