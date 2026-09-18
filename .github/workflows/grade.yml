@@ -139,8 +139,7 @@ jobs:
                 changedNames.every(name => allowed.has(name));
             }
 
-            // IMPORTANT: submission.md is graded from the student's actual feature branch,
-            // never from main. The metadata must also match the real branch and Pull Request.
+            // Grade submission.md from the actual feature branch, never from main.
             const submission = branchExists ? await read('submission.md', branch) : '';
             const field = label => submission.match(new RegExp(`^${label}:\\s*(\\S.*)name: Checkpoint 2 — Auto and Teacher Grade
 
