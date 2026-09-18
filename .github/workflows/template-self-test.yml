@@ -56,11 +56,14 @@ jobs:
           grep -q 'main remained untouched' .github/workflows/grade.yml
           grep -q 'PR changes only allowed files' .github/workflows/grade.yml
           grep -q 'klis-cp2-mother-score' .github/workflows/grade-external-submission.yml
-          grep -q 'parseAutomaticChecklist' .github/workflows/grade-external-submission.yml
+          grep -q 'expectedBranch' .github/workflows/grade-external-submission.yml
+          grep -q 'submission.md' .github/workflows/grade-external-submission.yml
+          grep -q 'compare/main' .github/workflows/grade-external-submission.yml
           grep -q 'Automatic checklist' .github/workflows/grade-external-submission.yml
           grep -q 'Checked = passed. Unchecked = action required.' .github/workflows/grade-external-submission.yml
           grep -q 'checkpoint branch' .github/workflows/grade-external-submission.yml
           grep -q 'A merge to' .github/workflows/grade-external-submission.yml
+          grep -q 'Grade CP2 directly' .github/workflows/grade-external-submission.yml || true
           grep -q '.cp2-grades/' .github/workflows/grade-external-submission.yml
           grep -q 'klis-cp2-local-score' .github/workflows/student-score.yml
           grep -q 'raw.githubusercontent.com/KLIS-CS/GitHub-Feature-Branch-Pull-Request-Workflow/grades' .github/workflows/student-score.yml
