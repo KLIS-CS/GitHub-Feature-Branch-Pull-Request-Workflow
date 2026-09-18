@@ -189,17 +189,21 @@ jobs:
                 validation = 'Public student-owned repository detected.';
                 const issues = await publicJson(`${api}/issues?state=all&per_page=100`) || [];
                 const candidates = [];
-                for (const item of issues) {
-                  if (!item.comments) continue;
-                  const comments = await publicJson(`${api}/issues/${item.number}/comments?per_page=100`) || [];
-                  for (const c of comments) {
-                    if (c.user?.login === 'github-actions[bot]' && c.body?.includes(localMarker)) {
-                      candidates.push({ ...c, parent: item });
+
+                // Do not trust the issue.comments count here; GitHub can lag on that field.
+                // Read each Issue's comments directly so an existing grader comment is never skipped.
+                for (const item of issues.filter(i => !i.pull_request)) {
+                  const itemComments = await publicJson(`${api}/issues/${item.number}/comments?per_page=100`) || [];
+                  for (const comment of itemComments) {
+                    if (comment.user?.login === 'github-actions[bot]' && comment.body?.includes(localMarker)) {
+                      candidates.push({ ...comment, parent: item });
                     }
                   }
                 }
+
                 candidates.sort((a,b) => new Date(b.updated_at || b.created_at) - new Date(a.updated_at || a.created_at));
                 const trusted = candidates[0];
+
                 if (trusted) {
                   progressBody = trusted.body || '';
                   progressUrl = trusted.html_url || trusted.parent?.html_url || null;
@@ -207,7 +211,18 @@ jobs:
                   if (m) automatic = Math.max(0, Math.min(60, Number(m[1])));
                   validation += ` Trusted CP2 grader output found (${automatic}/60).`;
                 } else {
-                  validation += ' No trusted CP2 grader output found yet; run the student repository grader first.';
+                  // Fallback: preserve the student's current automatic score from CP2 — Score
+                  // even if the detailed progress comment cannot be discovered in this run.
+                  const scoreIssue = issues.find(i => !i.pull_request && i.body?.includes('<!-- klis-cp2-local-score -->'));
+                  const scoreMatch = scoreIssue?.body?.match(/\*\*Automatic score:\*\*\s*(\d+)\/60/i);
+                  if (scoreMatch) {
+                    automatic = Math.max(0, Math.min(60, Number(scoreMatch[1])));
+                    const detailLink = scoreIssue.body.match(/\[Open detailed CP2 progress\]\((https:\/\/github\.com\/[^)]+)\)/i);
+                    if (detailLink) progressUrl = detailLink[1];
+                    validation += ` Student CP2 score record found (${automatic}/60); detailed checklist will be restored when progress evidence is available.`;
+                  } else {
+                    validation += ' No trusted CP2 grader output found yet; push the checkpoint branch to run the student grader.';
+                  }
                 }
               }
             }
