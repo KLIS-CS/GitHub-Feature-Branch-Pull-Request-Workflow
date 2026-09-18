@@ -16,6 +16,6 @@ Write 1–2 sentences.
 - [ ] I committed my changes with a meaningful commit message.
 - [ ] I pushed my CP2 branch to GitHub.
 - [ ] This Pull Request targets `main`.
-- [ ] I completed `submission.md` on this feature branch, and its username, branch name, and PR number match this Pull Request.
+- [ ] I completed `submission.md` on this feature branch, and its GitHub username and branch name are correct.
 - [ ] I changed only `feature.txt` and `submission.md`.
 - [ ] I will leave this Pull Request open until teacher grading is complete.
