@@ -38,18 +38,27 @@ jobs:
 
             Branch naming is strict: use exactly \`cp2-YOUR-GITHUB-USERNAME\`. For you, that means \`${branch}\`. The Pull Request must use this as the head/source branch and \`main\` as the base/target branch.
 
-            ### Your task
-            1. Clone this repository to your computer.
-            2. Create the required branch locally. Do not work on \`main\`.
-            3. Edit \`feature.txt\` on the required branch.
-            4. Complete \`submission.md\` on the required branch. Its GitHub Username, Required Branch, and Pull Request Number must match the real Pull Request.
-            5. Use \`git status\`, \`git add\`, \`git commit\`, and \`git push\` as part of the workflow.
-            6. Push the required branch to GitHub.
-            7. Open a Pull Request from the required branch into \`main\`.
-            8. Change only \`feature.txt\` and \`submission.md\`.
-            9. Leave the Pull Request open for teacher review.
+            ### Student checklist
 
-            The automatic grader will verify branch safety, committed/pushed work, and the Pull Request workflow.
+            Keep this checklist. Check each item only after you have actually completed it.
+
+            - [ ] I cloned this repository to my computer.
+            - [ ] I created the exact required branch: \`${branch}\`.
+            - [ ] I did **not** do the checkpoint work directly on \`main\`.
+            - [ ] I changed \`feature.txt\` on \`${branch}\`.
+            - [ ] I completed \`submission.md\` on \`${branch}\`.
+            - [ ] In \`submission.md\`, my GitHub Username matches \`${username}\`.
+            - [ ] In \`submission.md\`, Required Branch matches \`${branch}\`.
+            - [ ] I used \`git status\` to inspect my repository state.
+            - [ ] I staged my work with \`git add\`.
+            - [ ] I committed my work with a meaningful commit message.
+            - [ ] I pushed \`${branch}\` to GitHub.
+            - [ ] I opened a Pull Request from \`${branch}\` → \`main\`.
+            - [ ] I added the real Pull Request number to \`submission.md\`.
+            - [ ] My Pull Request changes only \`feature.txt\` and \`submission.md\`.
+            - [ ] I left the Pull Request open for grading.
+
+            The automatic grader will also post an **Automatic requirement checklist** showing which graded requirements passed and which still need work.
             `;
 
             await github.rest.issues.create({
