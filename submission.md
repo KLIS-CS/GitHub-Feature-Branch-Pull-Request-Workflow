@@ -4,18 +4,26 @@
 > The grader reads this file from the Pull Request's **head/source branch**, not from `main`.
 > `GitHub Username`, `Required Branch`, and `Pull Request Number` must match the real Pull Request.
 
-Name:
-GitHub Username:
-Required Branch:
-Pull Request Number:
+Name:  
+GitHub Username:  
+Required Branch:  
+Pull Request Number:  
 
 ## Commands Used
 
-Write the commands you used, one per line, in the order you used them.
+Write the commands you used, **one command per line**, inside the code block below.
 
 ```text
-
+git clone ...
+git branch cp2-YOUR-GITHUB-USERNAME
+git switch cp2-YOUR-GITHUB-USERNAME
+git status
+git add .
+git commit -m "..."
+git push origin cp2-YOUR-GITHUB-USERNAME
 ```
+
+Replace the examples with the commands you actually used.
 
 ## Question 1 — Branch Safety
 
