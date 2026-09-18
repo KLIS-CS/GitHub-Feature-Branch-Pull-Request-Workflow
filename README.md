@@ -122,9 +122,7 @@ Student repository
 → Final score /100
 ```
 
-The student score sync checks automatically about once per hour. It can also be refreshed with:
-
-**Actions → CP2 — Student Score → Run workflow**
+The student score sync updates automatically after grading and also checks about once per hour. Students do **not** need to run anything from **Actions**.
 
 ## Checkpoint Navigation
 
