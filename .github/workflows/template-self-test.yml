@@ -28,6 +28,7 @@ jobs:
           test -f .github/ISSUE_TEMPLATE/cp2-submission.yml
           test -f .github/workflows/0-start-exercise.yml
           grep -q 'branches: \[main\]' .github/workflows/0-start-exercise.yml
+          grep -q "github.repository != 'KLIS-CS/GitHub-Feature-Branch-Pull-Request-Workflow'" .github/workflows/0-start-exercise.yml
           grep -q 'Exercise Issue automatically' README.md
           grep -q 'do \*\*not\*\* need to open \*\*Actions\*\*' README.md
           test -f .github/workflows/grade.yml
