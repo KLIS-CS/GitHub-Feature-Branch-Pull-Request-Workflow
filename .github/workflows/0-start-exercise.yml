@@ -38,30 +38,19 @@ jobs:
 
             **Required branch:** \`${branch}\`
 
-            Branch naming is strict: use exactly \`cp2-YOUR-GITHUB-USERNAME\`. For you, that means \`${branch}\`. The Pull Request must use this as the head/source branch and \`main\` as the base/target branch.
+            ### Your task
 
-            ### Student checklist
+            1. Clone this repository to your computer.
+            2. Create and switch to \`${branch}\`. Do not do the checkpoint work on \`main\`.
+            3. On that branch, update \`feature.txt\` and complete \`submission.md\`.
+            4. Commit and push \`${branch}\` to GitHub.
+            5. Open a Pull Request from \`${branch}\` → \`main\` and leave it open for grading.
 
-            Keep this checklist. Check each item only after you have actually completed it.
+            GitHub detects the Pull Request automatically. You do **not** need to enter a PR number in \`submission.md\`.
 
-            - [ ] I cloned this repository to my computer.
-            - [ ] I created the exact required branch: \`${branch}\`.
-            - [ ] I did **not** do the checkpoint work directly on \`main\`.
-            - [ ] I changed \`feature.txt\` on \`${branch}\`.
-            - [ ] I completed \`submission.md\` on \`${branch}\`.
-            - [ ] In \`submission.md\`, my GitHub Username matches \`${username}\`.
-            - [ ] In \`submission.md\`, Required Branch matches \`${branch}\`.
-            - [ ] I used \`git status\` to inspect my repository state.
-            - [ ] I staged my work with \`git add\`.
-            - [ ] I committed my work with a meaningful commit message.
-            - [ ] I pushed \`${branch}\` to GitHub.
-            - [ ] I opened a Pull Request from \`${branch}\` → \`main\`.
-            - [ ] My Pull Request changes only \`feature.txt\` and \`submission.md\`.
-            - [ ] I left the Pull Request open for grading.
+            ### Automatic grading
 
-            GitHub identifies the Pull Request automatically after you open it. You do **not** need to type a PR number into \`submission.md\`.
-
-            The automatic grader will update this **same Exercise Issue** with the grading checklist and score. It will not create separate Progress or Score Issues.
+            The grader updates the checklist and score **below in this same Issue** whenever you push or update the Pull Request. You do not need to check boxes manually.
             `;
 
             await github.rest.issues.create({
