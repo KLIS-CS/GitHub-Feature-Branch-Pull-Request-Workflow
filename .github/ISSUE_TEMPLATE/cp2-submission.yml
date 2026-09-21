@@ -5,7 +5,7 @@ body:
   - type: markdown
     attributes:
       value: |
-        Submit only after the CP2 Pull Request has received an **APPROVED** review and has been merged into `main`.
+        Submit after the CP2 Pull Request has received an **APPROVED** review from another GitHub user.
 
         The completed public CP2 repository is detected automatically from the GitHub account that opens this submission.
 
@@ -24,9 +24,7 @@ body:
           required: true
         - label: My Pull Request used the required cp2-USERNAME branch and targeted main.
           required: true
-        - label: Another GitHub user submitted an APPROVED review before I merged the Pull Request.
-          required: true
-        - label: The Pull Request is merged into main.
+        - label: Another GitHub user submitted an APPROVED review on my Pull Request.
           required: true
         - label: I did not include passwords, API keys, tokens, or other secrets.
           required: true
