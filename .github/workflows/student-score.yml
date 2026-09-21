@@ -2,7 +2,7 @@ name: CP2 — Student Score
 
 on:
   workflow_run:
-    workflows: ["Checkpoint 2 — Auto and Teacher Grade"]
+    workflows: ["Checkpoint 2 — Auto Grade"]
     types: [completed]
   schedule:
     - cron: '23 * * * *'
