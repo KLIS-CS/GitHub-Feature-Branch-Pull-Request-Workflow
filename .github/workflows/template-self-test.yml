@@ -53,7 +53,8 @@ jobs:
 
           grep -q 'klis-cp2-mother-score' .github/workflows/grade-external-submission.yml
           grep -q 'klis-cp2-progress' .github/workflows/grade-external-submission.yml
-          grep -q 'Trusted CP2 grader output' .github/workflows/grade-external-submission.yml
+          grep -q 'Automatic score was recalculated directly from GitHub evidence' .github/workflows/grade-external-submission.yml
+          grep -q 'APPROVED review from another user' .github/workflows/grade-external-submission.yml
           grep -q '.cp2-grades/' .github/workflows/grade-external-submission.yml
 
           grep -q 'klis-cp2-exercise' .github/workflows/student-score.yml
