@@ -18,8 +18,7 @@ Write 1–2 sentences.
 - [ ] I completed `submission.md` on this branch.
 - [ ] This PR changes only `feature.txt` and `submission.md`.
 
-### Review and merge
+### Review
 
 - [ ] I will request review from another GitHub user.
-- [ ] I will wait for an **APPROVED** review before merging.
-- [ ] I will merge only after approval.
+- [ ] I will receive an **APPROVED** review from another GitHub user.
