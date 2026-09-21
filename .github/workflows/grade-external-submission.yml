@@ -186,7 +186,7 @@ jobs:
             const total = automatic + teacher;
             const finalLine = manual ? `${total}/100` : 'pending teacher review';
             const status = automatic < 60
-              ? '🟡 **IN PROGRESS — finish the reviewed/merged workflow in the student repository.**'
+              ? '🟡 **IN PROGRESS — finish the feature-branch, Pull Request, and review workflow in the student repository.**'
               : !manual
                 ? '🔵 **AUTOMATIC CHECKS PASSED — awaiting teacher review.**'
                 : `✅ **FINAL SCORE: ${total}/100**`;
@@ -225,7 +225,7 @@ jobs:
             - ${canonicalRepo ? `[Open student repository](${canonicalRepo})` : 'Student repository unavailable'}
             - ${progressUrl ? `[Open trusted CP2 progress evidence](${progressUrl})` : 'Trusted CP2 progress evidence not found'}
 
-            > Full automatic credit requires a human APPROVED review before merge. The feature branch may be deleted after merge.
+            > Full automatic credit requires a human APPROVED review from another GitHub user. The grader uses the Pull Request head SHA to verify feature-branch work.
 
             ### Teacher grading
 
