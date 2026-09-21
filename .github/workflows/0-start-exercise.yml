@@ -47,13 +47,12 @@ jobs:
             - [ ] Open a Pull Request from `${branch}` → `main`.
             - [ ] Request review from another GitHub user.
             - [ ] Receive an **APPROVED** review.
-            - [ ] Merge only after approval.
 
             GitHub detects the Pull Request automatically. You do **not** enter a PR number manually.
 
             ### Automatic grading
 
-            The grader updates the checklist and score **below in this same Issue** whenever you push, review, or merge. It still works if you delete the feature branch after merge.
+            The grader updates the checklist and score **below in this same Issue** whenever you push the feature branch, open or update the Pull Request, or receive a review.
             `;
 
             await github.rest.issues.create({
