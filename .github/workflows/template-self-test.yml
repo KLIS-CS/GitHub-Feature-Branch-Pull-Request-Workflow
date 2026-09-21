@@ -27,27 +27,29 @@ jobs:
 
           grep -q 'cp2-YOUR-GITHUB-USERNAME' README.md
           grep -q 'APPROVED' README.md
-          grep -q 'merge' README.md
-          grep -q 'Pull Request.*merged after approval' README.md
+          ! grep -qi 'merge' README.md
           grep -q '^STARTER: Replace this line on your CP2 feature branch' feature.txt
 
           grep -q 'stored \*\*head commit\*\*' submission.md
-          grep -q 'Push, Pull Request, Review, Merge' submission.md
+          grep -q 'Push, Pull Request, Review' submission.md
+          ! grep -qi 'merge' submission.md
           ! grep -q 'Pull Request Number:' submission.md
 
           grep -q 'pull_request_review:' .github/workflows/grade.yml
           grep -q 'listReviews' .github/workflows/grade.yml
           grep -q "r.state === 'APPROVED'" .github/workflows/grade.yml
-          grep -q 'mergedAfterApproval' .github/workflows/grade.yml
+          grep -q 'approvedReview' .github/workflows/grade.yml
+          ! grep -q 'mergedAfterApproval' .github/workflows/grade.yml
           grep -q 'pr?.head?.sha' .github/workflows/grade.yml
           grep -q 'PR changes only allowed files' .github/workflows/grade.yml
           grep -q 'klis-cp2-progress' .github/workflows/grade.yml
-          ! grep -q "p.state === 'open'" .github/workflows/grade.yml
 
           grep -q 'APPROVED' .github/workflows/0-start-exercise.yml
-          grep -q 'Merge only after approval' .github/workflows/0-start-exercise.yml
+          ! grep -qi 'merge' .github/workflows/0-start-exercise.yml
           grep -q 'APPROVED' .github/pull_request_template.md
-          grep -q 'APPROVED review before I merged' .github/ISSUE_TEMPLATE/cp2-submission.yml
+          ! grep -qi 'merge' .github/pull_request_template.md
+          grep -q 'APPROVED review on my Pull Request' .github/ISSUE_TEMPLATE/cp2-submission.yml
+          ! grep -qi 'merge' .github/ISSUE_TEMPLATE/cp2-submission.yml
 
           grep -q 'klis-cp2-mother-score' .github/workflows/grade-external-submission.yml
           grep -q 'klis-cp2-progress' .github/workflows/grade-external-submission.yml
@@ -58,7 +60,8 @@ jobs:
           grep -q 'klis-cp2-teacher-sync-start' .github/workflows/student-score.yml
 
           grep -q 'Pull Request understanding: 0/10' TEACHER-GRADING.md
-          echo 'CP2 reviewed-merge assessment structure is valid.'
+          grep -q 'workflows: \["Checkpoint 2 — Auto Grade"\]' .github/workflows/student-score.yml
+          echo 'CP2 feature-branch PR review assessment structure is valid.'
 
       - name: Validate workflow YAML syntax
         shell: bash
